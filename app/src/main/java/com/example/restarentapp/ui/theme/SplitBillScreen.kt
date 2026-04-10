@@ -1,5 +1,8 @@
 package com.example.restarentapp.ui.theme
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,41 +13,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.restarentapp.model.BillItem
+
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun SplitBillScreen() {
+fun SplitBillScreen(items1: SnapshotStateList<BillItem>) {
+
     val people = listOf("Asha", "Rahul", "John", "Priya")
     val paidState = remember { mutableStateListOf(false, false, false, false) }
     val selectedState = remember {
         mutableStateListOf(false, false, false, false)
     }
-    // Item state
-    val items = remember {
-        mutableStateListOf(
-            BillItem("🍔 Burger", 200, 0),
-            BillItem("🥤 Drinks", 100, 0),
-            BillItem("🍰 Cake", 200, 0)
-        )
-    }
+    val tabs = listOf("Evenly", "By Item", "By Amount", "Shares", "%")
 
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    // Item state
+    var items = remember { mutableStateListOf<BillItem>() }
+    items=items1
     val subtotal = items.sumOf { it.price * it.quantity }
     // Apply tax only when there are items
     val tax = if (subtotal > 0) 50 else 0
@@ -55,40 +55,16 @@ fun SplitBillScreen() {
     val perPerson = if (selectedCount > 0) {
         total / selectedCount.toDouble()
     } else 0.0
-  //  val perPerson = if (selectedCount > 0) total / selectedCount.toDouble() else 0.0
+
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
-            .padding(16.dp).systemBarsPadding()
+            .systemBarsPadding()
     ) {
-        Text(
-            text = "Split Bill",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Evenly", "By Item", "By Amount", "Shares", "%").forEachIndexed { index, title ->
-                val isSelected = index == 0
-                Text(
-                    text = title,
-                    modifier = Modifier
-                        .background(
-                            if (isSelected) Color(0xFF1ABC9C) else Color.Transparent,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    color = if (isSelected) Color.White else Color.Gray
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         Box(
             modifier = Modifier
@@ -96,7 +72,13 @@ fun SplitBillScreen() {
                 .background(Color(0xFFDFF5EF), RoundedCornerShape(12.dp))
                 .padding(12.dp)
         ) {
-            Text("${people.size} people splitting ₹$total → ₹${"%.2f".format(perPerson)} each")
+            Text(
+                if (selectedCount > 0) {
+                    "$selectedCount people splitting ₹$total → ₹${"%.2f".format(perPerson)} each"
+                } else {
+                    "Select participants to split bill"
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -181,33 +163,11 @@ fun SplitBillScreen() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                onClick = {
-                    for (i in paidState.indices) paidState[i] = true
-                },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1ABC9C))
-            ) {
-                Text("Pay All")
-            }
 
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Settle Later")
-            }
-        }
     }
 }
 
-// Data class
-data class BillItem(
-    val name: String,
-    val price: Int,
-    val quantity: Int
-)
+
 @Composable
 fun ParticipantRow(
     name: String,
