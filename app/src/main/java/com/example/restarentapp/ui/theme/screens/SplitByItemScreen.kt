@@ -1,31 +1,13 @@
 package com.example.restarentapp.ui.theme.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +18,7 @@ import com.example.restarentapp.model.Person
 
 @Composable
 fun SplitByItemScreen(items: List<BillItem>) {
+
     val people = listOf(
         Person("Asha", "A"),
         Person("Rahul", "R"),
@@ -43,6 +26,7 @@ fun SplitByItemScreen(items: List<BillItem>) {
         Person("Priya", "P")
     )
 
+    // checkbox state (person x item)
     val selections = remember {
         mutableStateListOf<Boolean>().apply {
             repeat(people.size * items.size) {
@@ -51,7 +35,8 @@ fun SplitByItemScreen(items: List<BillItem>) {
         }
     }
 
-    fun index(pIndex: Int, itemIndex: Int, itemsSize: Int): Int = pIndex * itemsSize + itemIndex
+    fun index(pIndex: Int, itemIndex: Int): Int =
+        pIndex * items.size + itemIndex
 
     Column(
         modifier = Modifier
@@ -61,30 +46,44 @@ fun SplitByItemScreen(items: List<BillItem>) {
             .systemBarsPadding()
             .padding(16.dp)
     ) {
+
         Text(
             text = "Split by Item",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
+
         Text("Pick who consumed each item", color = Color.Gray)
+
         Spacer(Modifier.height(14.dp))
 
+        // ================= PEOPLE =================
         people.forEachIndexed { pIndex, person ->
-            val personTotal = items.indices.sumOf { itemIndex ->
-                val idx = index(pIndex, itemIndex, items.size)
-                if (selections[idx]) items[itemIndex].price * items[itemIndex].quantity else 0.0
-            }
 
+            // ✅ PERSON TOTAL (ONLY SELECTED ITEMS)
+
+            val personTotal = items.indices.sumOf { itemIndex ->
+                val idx = pIndex * items.size + itemIndex
+
+                if (selections[idx]) {
+                    items[itemIndex].price
+                } else 0.0
+            }
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 modifier = Modifier.padding(bottom = 12.dp)
             ) {
+
                 Column(Modifier.padding(12.dp)) {
+
+                    // HEADER
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
@@ -94,36 +93,64 @@ fun SplitByItemScreen(items: List<BillItem>) {
                             ) {
                                 Text(person.short, color = Color.White)
                             }
+
                             Spacer(Modifier.width(8.dp))
-                            Text(text = person.name, fontWeight = FontWeight.Bold)
+
+                            Text(
+                                text = person.name,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
-                        Text(formatCurrency(personTotal), fontWeight = FontWeight.SemiBold)
+
+                        Text(
+                            text = formatCurrency(personTotal),
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (personTotal > 0)
+                                Color(0xFF2B8DBF)
+                            else
+                                Color.Gray
+                        )
                     }
 
                     Spacer(Modifier.height(8.dp))
 
+                    // ================= ITEMS =================
                     items.forEachIndexed { itemIndex, item ->
-                        val idx = index(pIndex, itemIndex, items.size)
-                        val itemTotal = item.price * item.quantity
+
+                        val idx = index(pIndex, itemIndex)
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 6.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                Checkbox(
-                                    checked = selections[idx],
-                                    onCheckedChange = { selections[idx] = it }
-                                )
-                                Text("${item.name} (${item.quantity}x)")
-                            }
+
+                            Checkbox(
+                                checked = selections[idx],
+                                onCheckedChange = { selections[idx] = it }
+                            )
+
+                            Spacer(Modifier.width(6.dp))
 
                             Text(
-                                if (selections[idx]) formatCurrency(itemTotal) else formatCurrency(0.0),
-                                color = if (selections[idx]) Color(0xFF2B8DBF) else Color.Gray
+                                text = item.name,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Text(
+                                text = if (selections[idx])
+                                    formatCurrency(item.price)
+                                else
+                                    formatCurrency(0.0),
+                                color = if (selections[idx])
+                                    Color(0xFF2B8DBF)
+                                else
+                                    Color.Gray,
+                                fontWeight = if (selections[idx])
+                                    FontWeight.SemiBold
+                                else
+                                    FontWeight.Normal
                             )
                         }
                     }
@@ -132,21 +159,39 @@ fun SplitByItemScreen(items: List<BillItem>) {
         }
 
         Spacer(Modifier.height(8.dp))
+
         BillSummary(items, selections, people.size)
     }
 }
 
 @Composable
-fun BillSummary(items: List<BillItem>, selections: List<Boolean>, peopleCount: Int) {
-    fun index(pIndex: Int, itemIndex: Int, itemsSize: Int): Int = pIndex * itemsSize + itemIndex
+fun BillSummary(
+    items: List<BillItem>,
+    selections: List<Boolean>,
+    peopleCount: Int
+) {
+
+    fun index(pIndex: Int, itemIndex: Int): Int =
+        pIndex * items.size + itemIndex
 
     val itemTotals = items.mapIndexed { itemIndex, item ->
+
         val count = (0 until peopleCount).count { pIndex ->
-            val idx = index(pIndex, itemIndex, items.size)
+            val idx = pIndex * items.size + itemIndex
             selections[idx]
         }
-        item.name to (count * item.price * item.quantity)
-    }
+
+        val total = if (count > 0)
+            count * item.price
+        else
+            0.0
+
+        if (count > 0) {
+            item.name to total
+        } else {
+            null
+        }
+    }.filterNotNull()
 
     val subtotal = itemTotals.sumOf { it.second }
     val tax = if (subtotal > 0) 50.0 else 0.0
@@ -156,8 +201,11 @@ fun BillSummary(items: List<BillItem>, selections: List<Boolean>, peopleCount: I
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
+
         Column(Modifier.padding(12.dp)) {
+
             Text("Bill Summary", fontWeight = FontWeight.Bold)
+
             Spacer(Modifier.height(8.dp))
 
             itemTotals.forEach {
@@ -171,6 +219,7 @@ fun BillSummary(items: List<BillItem>, selections: List<Boolean>, peopleCount: I
             }
 
             Divider(Modifier.padding(vertical = 8.dp))
+
             SummaryRow("Subtotal", formatCurrency(subtotal))
             SummaryRow("Tax", formatCurrency(tax))
             SummaryRow("Total", formatCurrency(total), true)
@@ -178,4 +227,5 @@ fun BillSummary(items: List<BillItem>, selections: List<Boolean>, peopleCount: I
     }
 }
 
-private fun formatCurrency(amount: Double): String = "₹${"%.2f".format(amount)}"
+private fun formatCurrency(amount: Double): String =
+    "₹${"%.2f".format(amount)}"

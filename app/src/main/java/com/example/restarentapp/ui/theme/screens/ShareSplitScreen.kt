@@ -55,7 +55,7 @@ fun ShareSplitScreen(totalBill: Double = 100.0) {
             .background(Color(0xFFF3F6F8))
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()
-            .padding(16.dp)
+
     ) {
         Text(
             "Share Based Split",
@@ -92,8 +92,7 @@ fun ShareSplitScreen(totalBill: Double = 100.0) {
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -102,16 +101,16 @@ fun ShareSplitScreen(totalBill: Double = 100.0) {
                             checked = person.selected,
                             onCheckedChange = { people[index] = person.copy(selected = it) }
                         )
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(2.dp))
                         Box(
                             modifier = Modifier
-                                .size(30.dp)
+                                .size(20.dp)
                                 .background(Color(0xFF2B8DBF), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(person.name.first().uppercase(), color = Color.White)
                         }
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(person.name)
                     }
 

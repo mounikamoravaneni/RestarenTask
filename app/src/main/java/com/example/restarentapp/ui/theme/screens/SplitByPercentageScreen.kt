@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.restarentapp.model.PersonPercent
 
@@ -50,7 +52,6 @@ fun SplitByPercentageScreen(totalBill: Double = 100.0) {
             .background(Color(0xFFF3F6F8))
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()
-            .padding(16.dp)
     ) {
         Text(
             "Split by Percentage",
@@ -102,13 +103,28 @@ fun SplitByPercentageScreen(totalBill: Double = 100.0) {
 
                     OutlinedTextField(
                         value = if (person.percent == 0) "" else person.percent.toString(),
+
                         onValueChange = { value ->
-                            val newValue = value.toIntOrNull() ?: 0
-                            people[index] = person.copy(percent = newValue)
+
+                            // ✅ allow only digits
+                            if (value.isEmpty() || value.matches(Regex("^\\d+\$"))) {
+
+                                val newValue = value.toIntOrNull() ?: 0
+
+                                people[index] = person.copy(percent = newValue)
+                            }
                         },
+
                         label = { Text("%") },
+
                         modifier = Modifier.width(90.dp),
-                        singleLine = true
+
+                        singleLine = true,
+
+                        // ✅ keyboard restriction
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
                     )
 
                     Column(horizontalAlignment = Alignment.End) {
