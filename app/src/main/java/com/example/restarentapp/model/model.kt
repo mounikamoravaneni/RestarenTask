@@ -52,3 +52,17 @@ data class BillItem(
     val total: Double
 )
 data class OrderRequest(val apiKey:String,val tableId:String)
+
+data class PersonShare(
+    val id: String,
+    val name: String,
+    val shares: Int = 0,
+    val selected: Boolean = false
+)
+
+data class PersonPercent(
+    val id: String,
+    val name: String,
+    val percent: Int = 0,
+    val selected: Boolean = false
+)
